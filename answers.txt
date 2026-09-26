@@ -1,0 +1,15 @@
+Customer Support Query
+======================
+
+Query:
+compare Jev and Laya
+
+Assistant Answer:
+Jev and Laya can refer to different contexts depending on what you're referring to, but they are not widely recognized terms or names in mainstream discussions. If you're speaking about specific brands, products, or even characters in a certain context (like literature, gaming, etc.), could you please provide more details? 
+
+For example, if these names are related to a specific industry, game, or story, sharing that context will allow me to provide you a more meaningful comparison.
+
+Web Search Answer:
+Title: Jev vs Laya: Hosted API or Open Weights? (2026 Guide)
+Snippet: Jev scored 74.4 overall (#1); Laya scored 54.4 (#33). Measure, Jev 1.13.0, Laya. Composite score, 74.4, 54.4. Intelligence score, 85.7, 45.8.
+Source: https://huggingface.co/blog/sora-2/jev-vs-laya-hosted-api-or-open-weights-2026-guide
