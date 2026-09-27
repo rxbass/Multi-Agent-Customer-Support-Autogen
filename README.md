@@ -91,6 +91,8 @@ If the moderation API is unavailable, messages are allowed through (fail open) s
 
 The **📊 Evaluation** page runs test questions through the same path as the chat: input guardrail, then the three agents, then the output guardrail.
 
+**Running evaluations is off by default,** because each run spends real API credits. When it's off, the button is disabled and an "I'm broke" message explains why. To run evaluations locally, add `ENABLE_EVALUATION=true` to your `.env`. Keep it unset or `false` on public deployments.
+
 - **Test set:** 10 built-in questions (`EVAL_DATASET` in `app.py`), each with 4 expected key points.
 - **Options:** how many questions to run, the agent model, and the judge model (default `gpt-4o`).
 - **Judge:** an LLM judge grades retrieval and answers.

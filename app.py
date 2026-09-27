@@ -423,6 +423,68 @@ html, body, [class*="css"], .stApp, .stMarkdown, button, input, textarea {
 .tint-sky { background: #e0f2fe; }
 .tint-pink { background: #fce7f3; }
 .tint-amber { background: #fef3c7; }
+
+/* ---------- Evaluation disabled ("I'm broke") card ---------- */
+
+.broke-card {
+    text-align: center;
+    background: #fffbeb;
+    border: 1px dashed #f59e0b;
+    border-radius: 18px;
+    padding: 22px 20px;
+    margin-bottom: 12px;
+}
+
+.broke-art {
+    font-size: 44px;
+    line-height: 1;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.broke-face {
+    display: inline-block;
+    animation: broke-wobble 2.4s ease-in-out infinite;
+}
+
+@keyframes broke-wobble {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-8deg); }
+    75% { transform: rotate(8deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .broke-face { animation: none; }
+}
+
+.broke-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #92400e;
+    margin-bottom: 6px;
+}
+
+.broke-text {
+    font-size: 14px;
+    color: #78350f;
+    line-height: 1.55;
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+.broke-hint {
+    font-size: 12.5px;
+    color: #a16207;
+    margin-top: 10px;
+}
+
+.broke-hint code {
+    background: #fef3c7;
+    border-radius: 6px;
+    padding: 1px 6px;
+}
 </style>
 """
 )
@@ -1240,6 +1302,12 @@ def extract_responses(result) -> dict:
 # ============================================================
 
 DEFAULT_JUDGE_MODEL = "gpt-4o"
+
+# Evaluation spends real OpenAI/Serper credits, so it is off unless
+# explicitly enabled (e.g. ENABLE_EVALUATION=true in a local .env).
+# Keep it off on the public deployment.
+
+EVAL_ENABLED = os.getenv("ENABLE_EVALUATION", "false").strip().lower() == "true"
 
 # USD per 1M tokens (input, output). Check these against current
 # OpenAI pricing before relying on the cost numbers.
@@ -2191,7 +2259,34 @@ def render_evaluation_page():
             "SEARCH_PRICE in app.py."
         )
 
-        run = st.button("▶ Run evaluation", type="primary", width="stretch")
+        if not EVAL_ENABLED:
+
+            st.html(
+                """
+<div class="broke-card">
+  <div class="broke-art" aria-hidden="true">
+    <span>💸</span><span class="broke-face">🥲</span><span>🪙</span>
+  </div>
+  <div class="broke-title">I'm broke. Please don't make me pay for this.</div>
+  <div class="broke-text">
+    Every evaluation run burns real OpenAI and Serper credits, and my
+    wallet has already filed a complaint. Running evaluations is
+    switched off on this public demo.
+  </div>
+  <div class="broke-hint">
+    Want the numbers? Clone the repo and run it locally with
+    <code>ENABLE_EVALUATION=true</code> in your <code>.env</code>.
+  </div>
+</div>
+"""
+            )
+
+        run = st.button(
+            "▶ Run evaluation",
+            type="primary",
+            width="stretch",
+            disabled=not EVAL_ENABLED
+        )
 
     with st.expander(f"Test questions ({len(EVAL_DATASET)})"):
 
@@ -2208,7 +2303,7 @@ def render_evaluation_page():
             hide_index=True
         )
 
-    if run:
+    if run and EVAL_ENABLED:
 
         st.session_state.eval_run = run_evaluation(
             EVAL_DATASET[:count],
@@ -2220,7 +2315,8 @@ def render_evaluation_page():
 
     if not data:
 
-        st.info("Run an evaluation to see results here.")
+        if EVAL_ENABLED:
+            st.info("Run an evaluation to see results here.")
 
         return
 
