@@ -1,0 +1,25 @@
+# For a VPS that already runs a Caddy container (e.g. hybrid-rag-caddy)
+# on ports 80/443. Starts only the app and attaches it to that Caddy's
+# Docker network; the existing Caddy handles the domain and SSL.
+#
+#   PROXY_NETWORK=<caddy network name> docker compose -f docker-compose.vps.yml up -d --build
+#
+# (or put PROXY_NETWORK=... in .env)
+
+services:
+
+  app:
+    build: .
+    container_name: supportdude-app
+    env_file: .env
+    restart: unless-stopped
+    # No published ports: only reachable by Caddy over the shared network
+    expose:
+      - "8501"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+    name: ${PROXY_NETWORK:?Set PROXY_NETWORK to the existing Caddy container's network}

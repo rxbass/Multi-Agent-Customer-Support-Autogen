@@ -1,0 +1,22 @@
+{
+	# Let's Encrypt account email (expiry notices)
+	email {$ACME_EMAIL}
+}
+
+# Caddy obtains and renews the SSL certificate for this domain
+# automatically and redirects HTTP to HTTPS.
+{$DOMAIN} {
+	encode gzip
+
+	# Streamlit uses WebSockets; Caddy proxies them without extra config
+	reverse_proxy app:8501
+
+	# Optional: password-protect the whole app so strangers can't spend
+	# your OpenAI/Serper credits. Generate a hash on the VPS with:
+	#   docker compose exec caddy caddy hash-password
+	# then uncomment and fill in:
+	#
+	# basic_auth {
+	# 	admin <paste-hash-here>
+	# }
+}

@@ -1,0 +1,31 @@
+services:
+
+  app:
+    build: .
+    env_file: .env
+    restart: unless-stopped
+    # Only reachable through Caddy, never directly from the internet
+    expose:
+      - "8501"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Keeps the SSL certificates across restarts (avoids Let's Encrypt rate limits)
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

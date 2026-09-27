@@ -21,6 +21,7 @@ The app also has input/output guardrails and a built-in evaluation page. Everyth
 | `.env.example` | Template for the required API keys |
 | `.streamlit/config.toml` | Light theme and accent colour for the UI |
 | `docs/architecture.png` | Flow diagram shown above |
+| `Dockerfile`, `docker-compose.yml`, `Caddyfile`, `.dockerignore` | Deployment (see [Deployment](#deployment-docker--caddy--ssl)) |
 | `answers.txt` | Written by the Entry Agent for the latest chat question |
 | `eval_answers.txt` | Written during evaluation runs instead of `answers.txt` (git-ignored) |
 
@@ -107,6 +108,72 @@ It reports four areas:
 Per-question results can be downloaded as CSV or JSON.
 
 **Cost figures are estimates.** They use the prices in `MODEL_PRICES` (USD per 1M tokens) and `SEARCH_PRICE` (USD per search, default $0.001) in `app.py`. Update them to match your OpenAI and Serper pricing.
+
+## Deployment (Docker + Caddy + SSL)
+
+The app runs in Docker on a VPS. [Caddy](https://caddyserver.com) sits in front as a reverse proxy: it serves your domain, gets a free Let's Encrypt SSL certificate, renews it automatically, and redirects HTTP to HTTPS.
+
+| File | Purpose |
+|---|---|
+| `Dockerfile` | Builds the Streamlit app image (Python 3.13, non-root user, health check) |
+| `docker-compose.yml` | Runs the app container plus the Caddy container on ports 80/443 |
+| `Caddyfile` | Domain, SSL and reverse-proxy settings |
+| `.dockerignore` | Keeps `.env`, `.venv` and local files out of the image |
+
+### 1. Point the domain at the VPS
+
+In your domain's DNS settings, add an `A` record:
+
+| Type | Name | Points to |
+|---|---|---|
+| A | `@`, or a subdomain such as `support` | your VPS public IP |
+
+Wait until `ping your-domain` returns the VPS IP. Caddy can't get a certificate until DNS resolves.
+
+### 2. Prepare the VPS (Ubuntu)
+
+```bash
+# Install Docker (skip if you chose Hostinger's Docker VPS template)
+curl -fsSL https://get.docker.com | sh
+
+# Open SSH, HTTP and HTTPS
+ufw allow 22 && ufw allow 80 && ufw allow 443 && ufw enable
+```
+
+If a firewall is also enabled in Hostinger's VPS panel, allow ports 80 and 443 there too.
+
+### 3. Copy the project and configure it
+
+```bash
+git clone <your-repo-url> support && cd support
+# or copy the folder from your machine: scp -r . root@<vps-ip>:~/support
+
+cp .env.example .env
+nano .env   # set OPENAI_API_KEY, SERPER_API_KEY, DOMAIN, ACME_EMAIL
+```
+
+### 4. Start
+
+```bash
+docker compose up -d --build
+docker compose logs -f caddy   # watch for "certificate obtained successfully"
+```
+
+Then open `https://your-domain`.
+
+### Updating
+
+```bash
+git pull && docker compose up -d --build
+```
+
+### Protecting your API credits
+
+Once deployed, anyone who finds the URL can use the chat and the Evaluation page, which spend your OpenAI and Serper credits. To require a password:
+
+1. Run `docker compose exec caddy caddy hash-password`.
+2. Paste the hash into the commented `basic_auth` block in `Caddyfile`.
+3. Run `docker compose restart caddy`.
 
 ## Known limitations
 
