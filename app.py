@@ -88,10 +88,14 @@ html, body, [class*="css"], .stApp, .stMarkdown, button, input, textarea {
 
 #MainMenu, footer, [data-testid="stDecoration"] { visibility: hidden; }
 
+/* The chat input sits below the content (not over it), so no extra
+   bottom padding is needed. Extra height matters: Streamlit opens chat
+   pages scrolled to the bottom, so a too-tall welcome screen hides the
+   header. */
 .block-container {
     max-width: 860px;
-    padding-top: 2.5rem;
-    padding-bottom: 7rem;
+    padding-top: 1.5rem;
+    padding-bottom: 1rem;
 }
 
 /* Bottom bar that holds the chat input */
@@ -267,6 +271,26 @@ html, body, [class*="css"], .stApp, .stMarkdown, button, input, textarea {
     .feature-grid { grid-template-columns: 1fr; }
     .hero { padding: 24px; }
     .hero-title { font-size: 26px; }
+}
+
+/* Short windows: tighten the welcome screen so it fits without the
+   auto-scroll hiding the header. The feature cards repeat what the
+   sidebar already explains, so they go first. */
+@media (max-height: 900px) {
+    .hero { padding: 22px 28px; margin-bottom: 1rem; }
+    .hero-eyebrow { margin-bottom: 10px; }
+    .hero-title { font-size: 28px; }
+    .agent-chips { margin-top: 12px; }
+    .welcome { margin: 0 0 1rem; }
+    .feature-grid { display: none; }
+    [class*="st-key-suggest-"] button { min-height: 52px; }
+}
+
+@media (max-height: 720px) {
+    .hero { padding: 18px 24px; }
+    .hero-subtitle, .agent-chips, .welcome-text { display: none; }
+    .hero-title { font-size: 24px; margin: 0; }
+    [class*="st-key-suggest-"] button { min-height: 44px; }
 }
 
 .section-label {
